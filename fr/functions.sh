@@ -1,9 +1,12 @@
+
 #!/bin/bash
 #Version 2.0
-gare_depart="Blanmont"
-gare_destination="Bruxelles"
+
 destination="$gare_destination"
 
+#########################################
+
+# fonctions pour vérifier l'existance de la gare dans le fichier de la sncb
 jv-get-station() {
 local __myresult=$1
 local dest=$(echo $destination)
@@ -14,7 +17,11 @@ local lg=$(echo "${#json_stations}")
 local json_stations_cor="$(echo "$json_stations"  | tr -d '[=@=]')"
 local lg1=$(echo "${#json_stations_cor}")
 local stations=$(echo "$json_stations_cor" | jq '[.graph[].name,.alternative.value]' | sed 's/\[//' | sed 's/\]//')
-local sta="$(echo -e "${stations}" | tr -d '[="=]' | sed s/' '/'_'/g)" 
+#local sta="$(echo -e "${stations}" | tr -d '[="=]' | sed s/' '/'_'/g)" 
+local sta1="$(echo -e "${stations}" | tr -d '[="=]' | tr -d '[= =]')"    # | tr -d '[=-=]')"
+local sta==$(echo $sta1 | iconv -f utf8 -t ascii//TRANSLIT)
+#local sta="$(jv_sanitize "${stations}")"
+# echo $sta 
 local prefix="__"
 IFS=',' read -a stat <<< $sta
 local nmax="${#a[@]}"
@@ -23,7 +30,7 @@ for (( n=0; n < ${nmax}; n++ ))
 do
    for (( st=0; st < ${stmax}; st++ ))
    do
-      local tx=${stat[$st]:3}
+      local tx=${stat[$st]}
 #      echo "n= $n , st= $st, tx =${tx},${stat[$st]}, a =${a[$n]}, stmax= ${stmax}"
       if  echo "$tx" | grep -i -q  "${a[$n]}" ; then
 #          echo "yes destination ${a[$n]} exists"
@@ -41,20 +48,27 @@ return
 }
 ##############################################################################
 
+# fonction principale pour la recherche des données sncb actuelles 
 jv_pg_cb_timetable() {
-if (( $# == 0 )); then
-#   echo "pas de destination précisée"
+# echo "$#"
+if [ -z "$1" ]; then
+   echo "pas de destination précisée ." 
    local destinat=$(echo "$gare_destination"  | sed s/'_'/'-'/g)
 else
-#   local a1="Vers Bruxelles"
-   local destinat=$(echo $1 | sed s/'_'/'-'/g)                  #"$(jv_sanitize "$a1")"
+   local destinat=$(echo "$1" | sed s/'_'/'-'/g)                  #"$(jv_sanitize "$a1")"
 # trouve le dernier mot qui est supposé être la destination
    local mt=( $destinat )
-   destinat=$(echo ${mt[-1] | sed s/'_'/'-'/g})
+#   echo "nb dans mt = ${#mt[@]}"
+   if [ "${#mt[@]}" -eq 1 ]; then
+      destinat=$(echo ${mt[0]})
+   else
+      destinat=$(echo ${mt[-1]})
+   fi
 fi
-echo "vers $destinat"
-destination=$(echo "$destinat"  | sed s/' '/'_'/g)
-
+echo "vers $destinat ."
+local destin=$(echo "$destinat"  | sed s/' '/'_'/g)
+destination=$(echo $destin | iconv -f utf8 -t ascii//TRANSLIT)
+#destination="$(jv_sanitize "$destin")"
 jv-get-station station   # verification si la destination existe 
 
 # echo "résultat = $station"
@@ -62,13 +76,14 @@ if [[ "$station" == "faux" ]]; then
    echo "désolé, je ne trouve pas la gare $destination"
    exit
 fi
-if [[ "$station" != "$destination" ]]; then
-    echo "la destination est $station .."
-fi
+#if [[ "$station" != "$destination" ]]; then
+#    echo "la destination est $station .."
+#fi
 local dt=$(echo `date +%d%m%y`)
 local tm=$(echo `date +%H%M`)
 local cpt=0
 local lg=0
+# echo "$gare_depart  -->  $destination"
 while [ $cpt -lt 3 ]
 do
    local json=$(curl -s -S "https://api.irail.be/connections/?to="$destination"&from="$gare_depart"&date="$dt"&time="$tm"&timeSel=depart&format=json")
@@ -120,4 +135,3 @@ do
 done
 }
 
- jv_pg_cb_timetable
