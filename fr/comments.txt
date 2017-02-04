@@ -1,0 +1,14 @@
+#!/bin/bash
+
+jv_pg_sncb_destination="$gare_destination"
+jv_pg_sncb_nodetin="pas de destination précisée"
+jv_pg_sncb_to="vers"
+jv_pg_sncb_sorry="désolé, je ne trouve pas la gare"
+jv_pg_sncb_direction="en direction de"
+jv_pg_sncb_nodelay="pas de retard annoncé"
+jv_pg_sncb_delay="avec un retard annoncé de"
+jv_pg_sncb_warning="Attention"
+jv_pg_sncb_deleted="ce train est supprimé"
+jv_pg_sncb_then="ensuite"
+
+
