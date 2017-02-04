@@ -1,1 +1,1 @@
-*HELLO WORLD*==say "Hello World"
+*TRAIN*SHEDULE(*)== say "The next three departures are" && say "$(jv_pg_sncb_timetable "(1)")"

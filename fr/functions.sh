@@ -1,40 +1,38 @@
-
 #!/bin/bash
-#Version 2.0
+# Version 2.1
 
-destination="$gare_destination"
+source  comments.txt
 
 #########################################
 
-# fonctions pour vérifier l'existance de la gare dans le fichier de la sncb
-jv-get-station() {
+# fonctions pour vérifier l'existance de la gare dans le fichier de la sncb et prendre la bonne syntaxe
+jv_pg_sncb_get_station() {
 local __myresult=$1
-local dest=$(echo $destination)
-nbmots=`echo $dest | wc -w`
-a=( $dest )
-local json_stations=$(curl -s -S -H "accept: application/json" https://irail.be/stations/NMBS) 
-local lg=$(echo "${#json_stations}")
-local json_stations_cor="$(echo "$json_stations"  | tr -d '[=@=]')"
-local lg1=$(echo "${#json_stations_cor}")
-local stations=$(echo "$json_stations_cor" | jq '[.graph[].name,.alternative.value]' | sed 's/\[//' | sed 's/\]//')
-#local sta="$(echo -e "${stations}" | tr -d '[="=]' | sed s/' '/'_'/g)" 
-local sta1="$(echo -e "${stations}" | tr -d '[="=]' | tr -d '[= =]')"    # | tr -d '[=-=]')"
-local sta==$(echo $sta1 | iconv -f utf8 -t ascii//TRANSLIT)
-#local sta="$(jv_sanitize "${stations}")"
-# echo $sta 
-local prefix="__"
+local dest=$(echo $jv_pg_sncb_destination)
+#nbmots=`echo $dest | wc -w`
+local a=( $dest )
+local json_stations=$(curl -s -S -H "accept: application/json" https://irail.be/stations/NMBS)
+local json_stations="$(echo "$json_stations"  | tr -d '[=@=]')"
+local stations=$(echo "$json_stations" | jq '[.graph[].name,.alternative.value]' | sed 's/\[//' | sed 's/\]//' | sed 's/^[ ]*//' | tr -d '[="=]')
+#echo $stations
+IFS=',' read -a statweb <<< $stations
+local sta="$(echo -e "${stations}"  | tr -d '[= =]'  | tr -d '[=-=]'  | iconv -f utf8 -t ascii//TRANSLIT)"
+#echo $sta 
 IFS=',' read -a stat <<< $sta
 local nmax="${#a[@]}"
 local stmax="${#stat[@]}"
+#echo "nmax=$nmax, stmax=$stmax"
 for (( n=0; n < ${nmax}; n++ ))
 do
    for (( st=0; st < ${stmax}; st++ ))
    do
       local tx=${stat[$st]}
-#      echo "n= $n , st= $st, tx =${tx},${stat[$st]}, a =${a[$n]}, stmax= ${stmax}"
+      local txweb=$(echo "${statweb[$st]}" | sed 's/^[ ]*//')
+#      echo "n= $n , st= $st, tx = ${tx}, txweb = ${txweb}"
       if  echo "$tx" | grep -i -q  "${a[$n]}" ; then
-#          echo "yes destination ${a[$n]} exists"
-          local myresult=$tx
+#          echo "yes destination ${a[$n]} ($txweb) exists"
+#          local myresult=$tx
+          local myresult=$txweb
           break
       fi
    done
@@ -49,44 +47,37 @@ return
 ##############################################################################
 
 # fonction principale pour la recherche des données sncb actuelles 
-jv_pg_cb_timetable() {
+jv_pg_sncb_timetable() {
 # echo "$#"
 if [ -z "$1" ]; then
-   echo "pas de destination précisée ." 
+   echo "$nodestin ." 
    local destinat=$(echo "$gare_destination"  | sed s/'_'/'-'/g)
 else
    local destinat=$(echo "$1" | sed s/'_'/'-'/g)                  #"$(jv_sanitize "$a1")"
-# trouve le dernier mot qui est supposé être la destination
+#  trouve le dernier mot qui est supposé être la destination
    local mt=( $destinat )
-#   echo "nb dans mt = ${#mt[@]}"
-   if [ "${#mt[@]}" -eq 1 ]; then
-      destinat=$(echo ${mt[0]})
-   else
-      destinat=$(echo ${mt[-1]})
-   fi
+   destinat=$(echo ${mt[-1]})
 fi
-echo "vers $destinat ."
+echo "$to $destinat ."
 local destin=$(echo "$destinat"  | sed s/' '/'_'/g)
-destination=$(echo $destin | iconv -f utf8 -t ascii//TRANSLIT)
-#destination="$(jv_sanitize "$destin")"
-jv-get-station station   # verification si la destination existe 
+jv_pg_sncb_destination=$(echo $destin | iconv -f utf8 -t ascii//TRANSLIT)
+#jv_pg_sncb_destination="$(jv_sanitize "$destin")"
+jv_pg_sncb_get_station jv_pg_sncb_station   # verification si la destination existe 
 
-# echo "résultat = $station"
-if [[ "$station" == "faux" ]]; then
-   echo "désolé, je ne trouve pas la gare $destination"
+# echo "résultat = $jv_pg_sncb_station"
+if [[ "$jv_pg_sncb_station" == "faux" ]]; then
+   echo "$sorry $jv_pg_sncb_destination"
    exit
 fi
-#if [[ "$station" != "$destination" ]]; then
-#    echo "la destination est $station .."
-#fi
+jv_pg_sncb_destination=$jv_pg_sncb_station
 local dt=$(echo `date +%d%m%y`)
 local tm=$(echo `date +%H%M`)
 local cpt=0
 local lg=0
-# echo "$gare_depart  -->  $destination"
+# echo "$gare_depart  -->  $jv_pg_sncb_destination"
 while [ $cpt -lt 3 ]
 do
-   local json=$(curl -s -S "https://api.irail.be/connections/?to="$destination"&from="$gare_depart"&date="$dt"&time="$tm"&timeSel=depart&format=json")
+   local json=$(curl -s -S "https://api.irail.be/connections/?to="$jv_pg_sncb_destination${line// /%20}"&from="$jv_pg_sncb_gare_depart${line// /%20}"&date="$dt"&time="$tm"&timeSel=depart&format=json")
    local lg=$(echo "${#json}")
 #   echo "lg = $lg"
 #   echo $json
@@ -113,25 +104,25 @@ IFS=',' read -a canc <<< $cancels
 IFS=',' read -a dire <<< $directs
 # local nb=$(echo ${#conn[@]})
 local cpt=0
-for n in ${!conn[*]}
+for  n in ${!conn[*]}
 do
    echo `date --date="@${conn[$n]}" +%R`
-   echo ". en direction de ${dire[$n]}"
+   echo ". $jv_pg_sncb_direction ${dire[$n]}"
    if (( ${canc[$n]} == "0" )); then
       if (( ${dela[$n]} == "0" )); then
-         echo ". pas de retard annoncé" 
+         echo ". $jv_pg_sncb_nodelay" 
       else
-         echo ". avec un retard annoncé de $((${dela[$n]}/60)) minutes" 
+         echo ". $jv_pg_sncb_delay $((${dela[$n]}/60)) minutes" 
       fi 
    else   
-      echo ". attention . ce train est supprimé" 
+      echo ". $jv_pg_sncb_warning . $jv_pg_sncb_deleted" 
    fi
    cpt=$[$cpt+1]
    if (( "$cpt" > "2" ))
    then
       break
    fi
-   echo ". ensuite ."
+   echo ". $jv_pg_sncb_then ."
 done
 }
 
