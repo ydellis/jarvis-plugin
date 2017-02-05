@@ -1,7 +1,16 @@
 #!/bin/bash
 # Version 2.1
 
-source  comments.txt
+jv_pg_sncb_destination="$jv_pg_sncb_gare_destination"
+jv_pg_sncb_nodetin="no destination specified"
+jv_pg_sncb_to="to"
+jv_pg_sncb_sorry="sorry, I don't find the station"
+jv_pg_sncb_direction="in the direction of"
+jv_pg_sncb_nodelay="no delay announced"
+jv_pg_sncb_delay="with an announced delay of"
+jv_pg_sncb_warning="Warning"
+jv_pg_sncb_deleted="this train is deleted"
+jv_pg_sncb_then="then"
 
 #########################################
 
