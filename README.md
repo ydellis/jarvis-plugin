@@ -1,7 +1,3 @@
-<!---
-IMPORTANT
-=========
-
 ## Description
 Version 2.0
 This plugin is to find informations about Timetable of the trains of the Belgian railway from your location. 
