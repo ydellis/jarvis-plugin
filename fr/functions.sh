@@ -1,8 +1,8 @@
 #!/bin/bash
 # Version 2.1
 
-jv_pg_sncb_destination="$gare_destination"
-jv_pg_sncb_nodetin="pas de destination précisée"
+#jv_pg_sncb_destination="$jv_pg_sncb_gare_destination"
+jv_pg_sncb_nodestin="pas de destination précisée"
 jv_pg_sncb_to="vers"
 jv_pg_sncb_sorry="désolé, je ne trouve pas la gare"
 jv_pg_sncb_direction="en direction de"
@@ -60,15 +60,15 @@ return
 jv_pg_sncb_timetable() {
 # echo "$#"
 if [ -z "$1" ]; then
-   echo "$nodestin ." 
-   local destinat=$(echo "$gare_destination"  | sed s/'_'/'-'/g)
+   echo "$jv_pg_sncb_nodestin ."
+   local destinat=$(echo "$jv_pg_sncb_gare_destination"  | sed s/'_'/'-'/g)
 else
    local destinat=$(echo "$1" | sed s/'_'/'-'/g)                  #"$(jv_sanitize "$a1")"
 #  trouve le dernier mot qui est supposé être la destination
    local mt=( $destinat )
    destinat=$(echo ${mt[-1]})
 fi
-echo "$to $destinat ."
+echo "$jv_pg_sncb_to $destinat ."
 local destin=$(echo "$destinat"  | sed s/' '/'_'/g)
 jv_pg_sncb_destination=$(echo $destin | iconv -f utf8 -t ascii//TRANSLIT)
 #jv_pg_sncb_destination="$(jv_sanitize "$destin")"
@@ -76,7 +76,7 @@ jv_pg_sncb_get_station jv_pg_sncb_station   # verification si la destination exi
 
 # echo "résultat = $jv_pg_sncb_station"
 if [[ "$jv_pg_sncb_station" == "faux" ]]; then
-   echo "$sorry $jv_pg_sncb_destination"
+   echo "$jv_pg_sncb_sorry $jv_pg_sncb_destination"
    exit
 fi
 jv_pg_sncb_destination=$jv_pg_sncb_station
@@ -84,7 +84,7 @@ local dt=$(echo `date +%d%m%y`)
 local tm=$(echo `date +%H%M`)
 local cpt=0
 local lg=0
-# echo "$gare_depart  -->  $jv_pg_sncb_destination"
+# echo "$jv_pg_sncb_gare_depart  -->  $jv_pg_sncb_destination"
 while [ $cpt -lt 3 ]
 do
    local json=$(curl -s -S "https://api.irail.be/connections/?to="$jv_pg_sncb_destination${line// /%20}"&from="$jv_pg_sncb_gare_depart${line// /%20}"&date="$dt"&time="$tm"&timeSel=depart&format=json")
