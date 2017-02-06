@@ -11,7 +11,7 @@ jv_pg_sncb_delay="with an announced delay of"
 jv_pg_sncb_warning="Warning"
 jv_pg_sncb_deleted="this train is deleted"
 jv_pg_sncb_then="then"
-jv_pg_sncb_arrival="arrival foeseen at"
+jv_pg_sncb_arrival="arrival foreseen at"
 
 #########################################
 
