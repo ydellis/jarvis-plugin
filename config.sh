@@ -1,4 +1,4 @@
-# Version 2.1
+# Version 2.2
 
 # Inscrire le nom de la station de départ, celle que vous utilisez régulièrement;
 # exemple : jv_pg_sncb_gare_depart="Blanmont"
