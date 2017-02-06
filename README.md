@@ -1,6 +1,6 @@
 ## Description
 Version 2.2
-This plugin is to find informations about Timetable of the trains of the Belgian railway from your location. 
+This plugin is to find informations about Timetable of the trains of the belgian railway from your location. 
 You have to define the departure station in config.sh, wich normally is the nearest station to your home.
 By default, you can define in config.sh the arrival station so you don't have to tell it to jarvis.
 Jarvis tell the two following departures from the current time
@@ -15,11 +15,12 @@ Jarvis annonce les deux prochains départs qui permettent d'atteindre la gare de
 ## Usage
 
 ```
-In English, the key words are "train" and "shedule" as definde in the commands file
+In English, the keywords are "train" and "schedule" as defined in the commands file
 En Français, les mots clés sont "horaire" et "train" tels que définis dans le fichier commands
 
 
-You: Donne-moi les horaires de train vers Bruxelles-Nord  (in english: Give me the train shedule to Brussels)
+You: Donne-moi les horaires de train vers Bruxelles-Nord 
+    (in english: Give me the train schedule to Brussels)
 Jarvis: 
  vers Bruxelles-Nord 
 12:46 en direction de Ottignies
