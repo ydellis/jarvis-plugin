@@ -1,1 +1,1 @@
-*HORAIRE*TRAIN(*)== say "Les trois prochaines heures de depart sont" && say "$(jv_pg_sncb_timetable "(1)")"
+*HORAIRE*TRAIN(*)== say "Les deux prochaines heures de départ sont" && say "$(jv_pg_sncb_timetable "(1)")"
