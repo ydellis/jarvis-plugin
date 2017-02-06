@@ -1,1 +1,1 @@
-*TRAIN*SHEDULE(*)== say "The next two departures are" && say "$(jv_pg_sncb_timetable "(1)")"
+*TRAIN*SCHEDULE(*)== say "The next two departures are" && say "$(jv_pg_sncb_timetable "(1)")"
