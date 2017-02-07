@@ -1,7 +1,6 @@
 #!/bin/bash
 # Version 2.2
 
-jv_pg_sncb_nodestin="no destination specified"
 jv_pg_sncb_to="to"
 jv_pg_sncb_sorry="sorry, I don't find the station"
 jv_pg_sncb_direction="in the direction of"
@@ -49,7 +48,6 @@ return
 # fonction principale pour la recherche des données sncb actuelles 
 jv_pg_sncb_timetable() {
 if [ -z "$1" ]; then
-   echo "$jv_pg_sncb_nodestin ."
    local destinat=$(echo "$jv_pg_sncb_gare_destination"  | sed s/'_'/'-'/g)
 else
    local destinat=$(echo "$1" | sed s/'_'/'-'/g)                  #"$(jv_sanitize "$a1")"
@@ -57,7 +55,7 @@ else
    local mt=( $destinat )
    destinat=$(echo ${mt[-1]})
 fi
-echo "$jv_pg_sncb_to $destinat ."
+echo "$jv_pg_sncb_gare_depart $jv_pg_sncb_to $destinat ."
 local destin=$(echo "$destinat"  | sed s/' '/'_'/g)
 jv_pg_sncb_destination=$(echo $destin | iconv -f utf8 -t ascii//TRANSLIT)
 jv_pg_sncb_destination="$(jv_sanitize "$destin")"
